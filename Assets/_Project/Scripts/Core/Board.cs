@@ -1,9 +1,14 @@
 using System.Collections.Generic;
+using System;
+
 namespace Game.Core
 {
     public class Board
     {
         readonly Piece[,] squares = new Piece[8, 8];
+        readonly Stack<Move> history = new Stack<Move>();
+        public int MoveCount => history.Count;
+        public Move? LastMove => history.Count > 0 ? history.Peek() : (Move?)null;
         public Piece GetPiece (Square square)
         {
             return square.IsValid ? squares[square.X, square.Y] : null;
@@ -22,6 +27,8 @@ namespace Game.Core
                     squares[x, y] = null;
                 }
             }
+
+            history.Clear();
         }
         public IEnumerable<(Square square, Piece piece)> AllPieces()
         {
@@ -36,6 +43,30 @@ namespace Game.Core
                     }
                 }
             }
+        }
+
+        public void MakeMove(Move move)
+        {
+            if(GetPiece(move.From) != move.Piece)
+                throw new InvalidOperationException($"MakeMove: {move} does not match the board.");
+            SetPiece(move.To, move.Piece);
+            SetPiece(move.From, null);
+            move.Piece.HasMoved = true;
+
+            history.Push(move);
+        }
+
+        public bool UndoMove()
+        {
+            if (history.Count == 0) return false;
+
+            Move move = history.Pop();
+
+            SetPiece(move.From, move.Piece);
+            SetPiece(move.To, move.Captured);
+            move.Piece.HasMoved = move.PieceHadMoved;
+
+            return true;
         }
 
         public void SetupInitialPosition()
