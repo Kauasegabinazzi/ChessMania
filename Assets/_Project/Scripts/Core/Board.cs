@@ -9,6 +9,7 @@ namespace Game.Core
         readonly Stack<Move> history = new Stack<Move>();
         public int MoveCount => history.Count;
         public Move? LastMove => history.Count > 0 ? history.Peek() : (Move?)null;
+        public PieceColor SideToMove => history.Count % 2 == 0 ? PieceColor.White : PieceColor.Black;
         public Piece GetPiece (Square square)
         {
             return square.IsValid ? squares[square.X, square.Y] : null;

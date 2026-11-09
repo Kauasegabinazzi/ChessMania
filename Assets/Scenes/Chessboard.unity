@@ -175,9 +175,9 @@ Camera:
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0
-    y: 0.0019762847
+    y: 0
     width: 1
-    height: 0.9960475
+    height: 1
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -401,6 +401,7 @@ GameObject:
   - component: {fileID: 1985141053}
   - component: {fileID: 1985141052}
   - component: {fileID: 1985141054}
+  - component: {fileID: 1985141055}
   m_Layer: 0
   m_Name: Board
   m_TagString: Untagged
@@ -442,6 +443,10 @@ MonoBehaviour:
   themes:
   - {fileID: 11400000, guid: 6abd5787d11e7dd43b3501a3bde1c715, type: 2}
   createTestBoardOnStart: 1
+  highlightPrefab: {fileID: 226035125419579452, guid: 750a34ff672a57a41ac77e21373fd0f3, type: 3}
+  selectedColor: {r: 1, g: 0.85, b: 0.2, a: 0.5}
+  moveColor: {r: 0.3, g: 0.9, b: 0.4, a: 0.45}
+  captureColor: {r: 0.95, g: 0.3, b: 0.3, a: 0.5}
 --- !u!212 &1985141053
 SpriteRenderer:
   serializedVersion: 3
@@ -518,6 +523,20 @@ MonoBehaviour:
   fontSize: 9
   color: {r: 1, g: 1, b: 1, a: 1}
   sortingOrder: 2
+--- !u!114 &1985141055
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1985141050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 22b161682f2face4980500635372de64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Game.Presentation::Game.Presentation.BoardInput
+  boardView: {fileID: 1985141052}
+  mainCamera: {fileID: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

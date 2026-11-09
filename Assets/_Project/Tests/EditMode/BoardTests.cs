@@ -89,5 +89,19 @@ namespace Game.Core.Tests
             Assert.AreEqual(0, board.MoveCount);
             Assert.IsNull(board.LastMove);
         }
+
+        [Test]
+        public void SideToMove_AlternatesAndRevertsOnUndo()
+        {
+            var board = new Board();
+            board.SetupInitialPosition();
+            Assert.AreEqual(PieceColor.White, board.SideToMove);
+
+            board.MakeMove(new Move(G1, F3, board.GetPiece(G1), null));
+            Assert.AreEqual(PieceColor.Black, board.SideToMove);
+
+            board.UndoMove();
+            Assert.AreEqual(PieceColor.White, board.SideToMove);
+        }
     }
 }

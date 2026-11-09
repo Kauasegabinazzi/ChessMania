@@ -18,6 +18,15 @@ namespace Game.Presentation
         [SerializeField] bool createTestBoardOnStart = true;
         readonly Dictionary<Piece, PieceView> views = new Dictionary<Piece, PieceView>();
         Board board;
+        [Header("Highlights")]
+        [SerializeField] SpriteRenderer highlightPrefab;
+        [SerializeField] Color selectedColor = new Color(1f, 0.85f, 0.2f, 0.5f);
+        [SerializeField] Color moveColor = new Color(0.3f, 0.9f, 0.4f, 0.45f);
+        [SerializeField] Color captureColor = new Color(0.95f, 0.3f, 0.3f, 0.5f);
+
+        readonly List<SpriteRenderer> highlights = new List<SpriteRenderer>();
+        public Board Board => board;
+
 
         void Start()
         {
@@ -44,6 +53,57 @@ namespace Game.Presentation
         {
             return transform.position + new Vector3(square.X - 3.5f, square.Y - 3.5f, 0f);
         }
+
+        public bool TryWorldToGrid(Vector3 worldPosition, out Square square)
+        {
+            Vector3 local = worldPosition - transform.position;
+            square = new Square(Mathf.FloorToInt(local.x + 4f), Mathf.FloorToInt(local.y + 4f));
+            return square.IsValid;
+        }
+
+        public void ApplyMove(Move move)
+        {
+            if(move.Captured != null && views.TryGetValue(move.Captured, out PieceView captureView))
+            {
+                Destroy(captureView.gameObject);
+                views.Remove(move.Captured);
+            }
+            if(views.TryGetValue(move.Piece, out PieceView view))
+            {
+                view.MoveTo(GridToWorld(move.To));
+                view.name = $"{move.Piece.Color} {move.Piece.Type} {move.To}";
+            }
+        }
+
+        public void ShowHighlights(Square selected, List<Move> moves)
+        {
+            ClearHighlights();
+            AddHighlight(selected, selectedColor);
+
+            foreach(var move in moves)
+            {
+                AddHighlight(move.To, move.IsCapture ? captureColor : moveColor);
+            }
+        }
+
+        public void ClearHighlights()
+        {
+            foreach(var highlight in highlights)
+            {
+                if (highlight != null)
+                    Destroy(highlight.gameObject);
+            }
+            highlights.Clear();
+        }
+
+        void AddHighlight(Square square, Color color)
+        {
+            SpriteRenderer highlight = Instantiate(highlightPrefab, transform);
+            highlight.transform.position = GridToWorld(square);
+            highlight.color = color;
+            highlights.Add(highlight);
+        }
+
 
         public void Rebuild()
         {

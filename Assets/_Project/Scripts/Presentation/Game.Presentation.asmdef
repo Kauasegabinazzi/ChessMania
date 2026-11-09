@@ -1,7 +1,7 @@
 {
   "name": "Game.Presentation",
   "rootNamespace": "Game.Presentation",
-  "references": ["Game.Core", "Game.AI", "Game.Modifiers", "Game.Run", "Unity.TextMeshPro"],
+  "references": ["Game.Core", "Game.AI", "Game.Modifiers", "Game.Run", "Unity.TextMeshPro", "Unity.InputSystem"],
   "includePlatforms": [],
   "excludePlatforms": [],
   "allowUnsafeCode": false,
