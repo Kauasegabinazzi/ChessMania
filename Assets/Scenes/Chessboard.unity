@@ -514,7 +514,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 33de755a479d50644bfec4e82237a2f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Game.Presentation::Game.Presentation.BoardCoordinates
-  font: {fileID: 11400000, guid: f15d38b0a84e5c8489c5d5a78f433640, type: 2}
+  font: {fileID: 11400000, guid: 6f6a0a6bbea751a4dae44b71458ebfcb, type: 2}
   fontSize: 9
   color: {r: 1, g: 1, b: 1, a: 1}
   sortingOrder: 2
