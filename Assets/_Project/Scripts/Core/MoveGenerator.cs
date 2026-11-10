@@ -20,6 +20,13 @@ namespace Game.Core
           (1, 2), (2, 1), (2, -1), (1, -2),(-1, -2), (-2, -1), (-2, 1), (-1, 2)
         };
 
+        static readonly (int dx, int dy)[] KingOffsets =
+        {
+          (1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)
+        };
+
+        static readonly int[] PawnCaptureFiles = { -1, 1 };
+
         public static List<Move> GetMoves(Board board, Square from)
         {
             var moves = new List<Move>();
@@ -41,6 +48,12 @@ namespace Game.Core
                 case PieceType.Knight:
                     AddJumpMoves(board, from, piece, KnightOffsets, moves);
                     break;
+                case PieceType.Pawn:
+                    AddPawnMoves(board, from, piece, moves);
+                    break;
+                case PieceType.King:
+                    AddJumpMoves(board, from, piece, KingOffsets, moves);
+                    break;
             }
 
             return moves;
@@ -48,7 +61,7 @@ namespace Game.Core
 
         private static void AddJumpMoves(Board board, Square from, Piece piece, (int dx, int dy)[] offsets, List<Move> moves)
         {
-            foreach(var(dx, dy) in offsets)
+            foreach (var (dx, dy) in offsets)
             {
                 var to = new Square(from.X + dx, from.Y + dy);
 
@@ -62,7 +75,7 @@ namespace Game.Core
 
         private static void AddSlidingMoves(Board board, Square from, Piece piece, (int dx, int dy)[] directions, List<Move> moves)
         {
-            foreach(var (dx, dy) in directions)
+            foreach (var (dx, dy) in directions)
             {
                 var to = new Square(from.X + dx, from.Y + dy);
 
@@ -70,7 +83,7 @@ namespace Game.Core
                 {
                     Piece target = board.GetPiece(to);
 
-                    if(target == null)
+                    if (target == null)
                     {
                         moves.Add(new Move(from, to, piece, null));
                     }
@@ -82,6 +95,35 @@ namespace Game.Core
                     }
 
                     to = new Square(to.X + dx, to.Y + dy);
+                }
+            }
+        }
+
+        static void AddPawnMoves(Board board, Square from, Piece piece, List<Move> moves)
+        {
+            int direction = piece.Color == PieceColor.White ? 1 : -1;
+            int startRank = piece.Color == PieceColor.White ? 1 : 6;
+
+            var oneStep = new Square(from.X, from.Y + direction);
+            if(oneStep.IsValid && board.GetPiece(oneStep) == null)
+            {
+                moves.Add(new Move(from, oneStep, piece, null));
+                var twoStep = new Square(from.X, from.Y + 2 * direction);
+                if (from.Y == startRank && board.GetPiece(twoStep) == null)
+                {
+                    moves.Add(new Move(from, twoStep, piece, null));
+                }
+            }
+
+            foreach(int dx in PawnCaptureFiles)
+            {
+                var target = new Square(from.X + dx, from.Y + direction);
+                if(!target.IsValid) continue;
+
+                Piece enemy = board.GetPiece(target);
+                if(enemy != null && enemy.Color != piece.Color)
+                {
+                    moves.Add(new Move(from, target, piece, enemy));
                 }
             }
         }
