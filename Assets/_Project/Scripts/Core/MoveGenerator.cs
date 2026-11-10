@@ -58,6 +58,53 @@ namespace Game.Core
             return moves;
         }
 
+        public static List<Move> GetLegalMoves(Board board, Square from)
+        {
+            var legalMoves = new List<Move>();
+
+            foreach (var move in GetMoves(board, from))
+            {
+                board.MakeMove(move);
+                bool leavesKingInCheck = IsInCheck(board, move.Piece.Color);
+                board.UndoMove();
+
+                if (!leavesKingInCheck)
+                    legalMoves.Add(move);
+
+            }
+
+            return legalMoves;
+        }
+
+        public static bool IsInCheck(Board board, PieceColor color)
+        {
+            Square? king = board.FindKing(color);
+            if (!king.HasValue) return false;
+
+            return IsSquareAttacked(board, king.Value, Opponent(color));
+        }
+
+        static bool IsSquareAttacked(Board board, Square square, PieceColor attacker)
+        {
+            foreach (var (from, piece) in board.AllPieces())
+            {
+                if (piece.Color != attacker) continue;
+
+                foreach (var move in GetMoves(board, from))
+                {
+                    if (move.To == square)
+                        return true;
+                }
+            }
+
+            return false;
+        }
+
+        static PieceColor Opponent(PieceColor color)
+        {
+            return color == PieceColor.White ? PieceColor.Black : PieceColor.White;
+        }
+
         private static void AddJumpMoves(Board board, Square from, Piece piece, (int dx, int dy)[] offsets, List<Move> moves)
         {
             foreach (var (dx, dy) in offsets)
@@ -104,7 +151,7 @@ namespace Game.Core
             int startRank = piece.Color == PieceColor.White ? 1 : 6;
 
             var oneStep = new Square(from.X, from.Y + direction);
-            if(oneStep.IsValid && board.GetPiece(oneStep) == null)
+            if (oneStep.IsValid && board.GetPiece(oneStep) == null)
             {
                 moves.Add(new Move(from, oneStep, piece, null));
                 var twoStep = new Square(from.X, from.Y + 2 * direction);
@@ -114,13 +161,13 @@ namespace Game.Core
                 }
             }
 
-            foreach(int dx in PawnCaptureFiles)
+            foreach (int dx in PawnCaptureFiles)
             {
                 var target = new Square(from.X + dx, from.Y + direction);
-                if(!target.IsValid) continue;
+                if (!target.IsValid) continue;
 
                 Piece enemy = board.GetPiece(target);
-                if(enemy != null && enemy.Color != piece.Color)
+                if (enemy != null && enemy.Color != piece.Color)
                 {
                     moves.Add(new Move(from, target, piece, enemy));
                 }

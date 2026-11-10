@@ -35,7 +35,7 @@ namespace Game.Presentation
         void Select(Square square)
         {
             selected = square;
-            selectedMoves = MoveGenerator.GetMoves(boardView.Board, square);
+            selectedMoves = MoveGenerator.GetLegalMoves(boardView.Board, square);
             boardView.ShowHighlights(square, selectedMoves);
         }
 

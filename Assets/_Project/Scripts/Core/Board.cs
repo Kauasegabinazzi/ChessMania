@@ -46,6 +46,18 @@ namespace Game.Core
             }
         }
 
+        public Square? FindKing(PieceColor color)
+        {
+            foreach(var (square, piece) in AllPieces())
+            {
+                if (piece.Type == PieceType.King && piece.Color == color)
+                {
+                    return square;
+                }
+            }
+            return null;
+        }
+
         public void MakeMove(Move move)
         {
             if(GetPiece(move.From) != move.Piece)
@@ -95,5 +107,7 @@ namespace Game.Core
                 SetPiece(new Square(x, 7), new Piece(backRank[x], PieceColor.Black));
             }
         }
+
+
     }
 }
