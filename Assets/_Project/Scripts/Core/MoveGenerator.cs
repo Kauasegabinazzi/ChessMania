@@ -81,7 +81,7 @@ namespace Game.Core
             Square? king = board.FindKing(color);
             if (!king.HasValue) return false;
 
-            return IsSquareAttacked(board, king.Value, Opponent(color));
+            return IsSquareAttacked(board, king.Value, color.Opponent());
         }
 
         static bool IsSquareAttacked(Board board, Square square, PieceColor attacker)
@@ -100,10 +100,10 @@ namespace Game.Core
             return false;
         }
 
-        static PieceColor Opponent(PieceColor color)
-        {
-            return color == PieceColor.White ? PieceColor.Black : PieceColor.White;
-        }
+        //static PieceColor Opponent(PieceColor color)
+        //{
+        //    return color == PieceColor.White ? PieceColor.Black : PieceColor.White;
+        //}
 
         private static void AddJumpMoves(Board board, Square from, Piece piece, (int dx, int dy)[] offsets, List<Move> moves)
         {
@@ -172,6 +172,32 @@ namespace Game.Core
                     moves.Add(new Move(from, target, piece, enemy));
                 }
             }
+        }
+
+        public static List<Move> GetAllLegalMoves(Board board, PieceColor color)
+        {
+            var pieces = new List<(Square square, Piece piece)>(board.AllPieces());
+            var moves = new List<Move>();
+
+            foreach(var (square, piece) in pieces)
+            {
+                if (piece.Color == color)
+                    moves.AddRange(GetLegalMoves(board, square));
+            }
+
+            return moves;
+        }
+
+        public static GameStatus GetStatus(Board board)
+        {
+            PieceColor side = board.SideToMove;
+            bool inCheck = IsInCheck(board, side);
+            bool hasMoves = GetAllLegalMoves(board, side).Count > 0;
+
+            if (!hasMoves)
+                return inCheck ? GameStatus.Checkmate : GameStatus.Stalemate;
+
+            return inCheck ? GameStatus.Check : GameStatus.InProgress;
         }
     }
 }

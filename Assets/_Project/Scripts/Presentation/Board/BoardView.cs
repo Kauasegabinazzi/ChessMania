@@ -28,7 +28,7 @@ namespace Game.Presentation
         public Board Board => board;
 
 
-        void Start()
+        void Awake()
         {
             if (themes != null && themes.Length > 0)
             {

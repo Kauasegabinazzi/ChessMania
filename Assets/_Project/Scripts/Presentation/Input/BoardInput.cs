@@ -9,6 +9,8 @@ namespace Game.Presentation
     {
         [SerializeField] BoardView boardView;
         [SerializeField] Camera mainCamera;
+        [SerializeField] GameStatusView statusView;
+        bool gameOver;
 
         Square? selected;
         List<Move> selectedMoves = new List<Move>();
@@ -19,8 +21,21 @@ namespace Game.Presentation
                 mainCamera = Camera.main;
         }
 
+        void Start()
+        {
+            RefreshStatus();
+        }
+
         void Update()
         {
+            Keyboard keyboard = Keyboard.current;
+            if(keyboard != null && keyboard.rKey.wasPressedThisFrame)
+            {
+                Restart();
+                return;
+            }
+            if (gameOver) return;
+
             Mouse mouse = Mouse.current;
             if (mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
 
@@ -56,6 +71,7 @@ namespace Game.Presentation
                 board.MakeMove(move);
                 boardView.ApplyMove(move);
                 Deselect();
+                RefreshStatus();
                 return;
             }
 
@@ -81,6 +97,27 @@ namespace Game.Presentation
 
             move = default;
             return false;
+        }
+
+        void RefreshStatus()
+        {
+            Board board = boardView.Board;
+            if (board == null) return;
+
+            GameStatus status = MoveGenerator.GetStatus(board);
+            gameOver = status == GameStatus.Checkmate || status == GameStatus.Stalemate;
+
+            if (statusView != null)
+                statusView.Show(status, board.SideToMove);
+        }
+
+        void Restart()
+        {
+            var board = new Board();
+            board.SetupInitialPosition();
+            boardView.Initialize(board);
+            Deselect();
+            RefreshStatus();
         }
     }
 }

@@ -1,3 +1,5 @@
+using System.Drawing;
+
 namespace Game.Core
 {
     public enum PieceType
@@ -24,6 +26,14 @@ namespace Game.Core
         {
             Type = type;
             Color = color;
+        }
+    }
+
+    public static class PieceColorExtensions
+    {
+        public static PieceColor Opponent(this PieceColor color)
+        {
+            return color == PieceColor.White ? PieceColor.Black : PieceColor.White;
         }
     }
 }
