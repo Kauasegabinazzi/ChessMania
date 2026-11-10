@@ -126,11 +126,11 @@ namespace Game.Core.Tests
         [Test]
         public void Pawn_CapturesDiagonallyOnlyEnemies()
         {
-            Board board = BoardWith(PieceType.Pawn, new Square(3, 3));
+            Board board = BoardWith(PieceType.Pawn, D4);
             board.SetPiece(C5, new Piece(PieceType.Knight, PieceColor.Black));
             board.SetPiece(E5, new Piece(PieceType.Knight, PieceColor.White));
 
-            var moves = MoveGenerator.GetMoves(board, new Square(3, 3));
+            var moves = MoveGenerator.GetMoves(board, D4);
 
             Assert.AreEqual(2, moves.Count);
             Assert.IsTrue(moves.Exists(m => m.To == D5 && !m.IsCapture));
