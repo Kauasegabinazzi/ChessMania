@@ -19,6 +19,7 @@ namespace Game.Presentation
         [SerializeField] PieceColor aiColor = PieceColor.Black;
         [SerializeField] float aiDelay = 0.5f;
         [SerializeField] AILevel aiLevel = AILevel.Greedy;
+        [SerializeField, Range(1, 4)] int aiDepth = 2;
 
         IChessAI ai;
         bool aiThinking;
@@ -34,6 +35,7 @@ namespace Game.Presentation
             ai = aiLevel switch
             {
                 AILevel.Greedy => new GreedyAI(),
+                AILevel.Minimax => new MinimaxAI(aiDepth),
                 _ => new RandomAI()
             };
         }
