@@ -18,6 +18,7 @@ namespace Game.Presentation
         [SerializeField] bool playAgainstAI = true;
         [SerializeField] PieceColor aiColor = PieceColor.Black;
         [SerializeField] float aiDelay = 0.5f;
+        [SerializeField] AILevel aiLevel = AILevel.Greedy;
 
         IChessAI ai;
         bool aiThinking;
@@ -30,7 +31,11 @@ namespace Game.Presentation
             if (mainCamera == null)
                 mainCamera = Camera.main;
 
-            ai = new RandomAI();
+            ai = aiLevel switch
+            {
+                AILevel.Greedy => new GreedyAI(),
+                _ => new RandomAI()
+            };
         }
 
         void Start()

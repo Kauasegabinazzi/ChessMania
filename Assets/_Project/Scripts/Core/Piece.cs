@@ -1,5 +1,3 @@
-using System.Drawing;
-
 namespace Game.Core
 {
     public enum PieceType

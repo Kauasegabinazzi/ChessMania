@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using UnityEditor.VersionControl;
 
 namespace Game.Core.Tests
 {

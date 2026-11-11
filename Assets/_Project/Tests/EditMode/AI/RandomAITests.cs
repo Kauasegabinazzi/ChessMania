@@ -1,4 +1,3 @@
-using UnityEngine;
 using Game.Core;
 using NUnit.Framework;
 
