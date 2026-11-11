@@ -2,6 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 using Game.Core;
 using UnityEngine.InputSystem;
+using System.Collections;
+using Game.AI;
 
 namespace Game.Presentation
 {
@@ -12,6 +14,14 @@ namespace Game.Presentation
         [SerializeField] GameStatusView statusView;
         bool gameOver;
 
+        [Header("AI")]
+        [SerializeField] bool playAgainstAI = true;
+        [SerializeField] PieceColor aiColor = PieceColor.Black;
+        [SerializeField] float aiDelay = 0.5f;
+
+        IChessAI ai;
+        bool aiThinking;
+
         Square? selected;
         List<Move> selectedMoves = new List<Move>();
 
@@ -19,11 +29,14 @@ namespace Game.Presentation
         {
             if (mainCamera == null)
                 mainCamera = Camera.main;
+
+            ai = new RandomAI();
         }
 
         void Start()
         {
             RefreshStatus();
+            TryStartAITurn();
         }
 
         void Update()
@@ -34,7 +47,7 @@ namespace Game.Presentation
                 Restart();
                 return;
             }
-            if (gameOver) return;
+            if (gameOver || aiThinking) return;
 
             Mouse mouse = Mouse.current;
             if (mouse == null || !mouse.leftButton.wasPressedThisFrame) return;
@@ -68,10 +81,13 @@ namespace Game.Presentation
 
             if (selected.HasValue && TryFindMove(square, out Move move))
             {
-                board.MakeMove(move);
-                boardView.ApplyMove(move);
-                Deselect();
-                RefreshStatus();
+                //board.MakeMove(move);
+                //boardView.ApplyMove(move);
+                //Deselect();
+                //RefreshStatus();
+                //return;
+
+                PlayMove(move);
                 return;
             }
 
@@ -113,11 +129,44 @@ namespace Game.Presentation
 
         void Restart()
         {
+            StopAllCoroutines();
+            aiThinking = false;
             var board = new Board();
             board.SetupInitialPosition();
             boardView.Initialize(board);
             Deselect();
             RefreshStatus();
+            TryStartAITurn();
         }
+
+        void PlayMove(Move move)
+        {
+            boardView.Board.MakeMove(move);
+            boardView.ApplyMove(move);
+            Deselect();
+            RefreshStatus();
+            TryStartAITurn();
+        }
+
+        void TryStartAITurn()
+        {
+            if (!playAgainstAI || gameOver) return;
+            if (boardView.Board.SideToMove != aiColor) return;
+
+            StartCoroutine(AITurn());
+        }
+
+        IEnumerator AITurn()
+        {
+            aiThinking = true;
+            yield return new WaitForSeconds(aiDelay);
+
+            Move? move = ai.ChooseMove(boardView.Board);
+            aiThinking = false;
+
+            if (move.HasValue)
+                PlayMove(move.Value);
+        }
+
     }
 }
