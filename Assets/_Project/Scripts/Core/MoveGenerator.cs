@@ -84,16 +84,71 @@ namespace Game.Core
             return IsSquareAttacked(board, king.Value, color.Opponent());
         }
 
-        static bool IsSquareAttacked(Board board, Square square, PieceColor attacker)
-        {
-            foreach (var (from, piece) in board.AllPieces())
-            {
-                if (piece.Color != attacker) continue;
+        //static bool IsSquareAttacked(Board board, Square square, PieceColor attacker)
+        //{
+        //    foreach (var (from, piece) in board.AllPieces())
+        //    {
+        //        if (piece.Color != attacker) continue;
 
-                foreach (var move in GetMoves(board, from))
+        //        foreach (var move in GetMoves(board, from))
+        //        {
+        //            if (move.To == square)
+        //                return true;
+        //        }
+        //    }
+
+        //    return false;
+        //}
+
+        public static bool IsSquareAttacked(Board board, Square square, PieceColor attacker)
+        {
+            int pawnDirection = attacker == PieceColor.White ? 1 : -1;
+            foreach (int dx in PawnCaptureFiles)
+            {
+                if (HasPiece(board, new Square(square.X + dx, square.Y - pawnDirection), PieceType.Pawn, attacker))
+                    return true;
+            }
+
+            foreach (var (dx, dy) in KnightOffsets)
+            {
+                if (HasPiece(board, new Square(square.X + dx, square.Y + dy), PieceType.Knight, attacker))
+                    return true;
+            }
+
+            foreach (var (dx, dy) in KingOffsets)
+            {
+                if (HasPiece(board, new Square(square.X + dx, square.Y + dy), PieceType.King, attacker))
+                    return true;
+            }
+
+            return IsAttackedAlongLines(board, square, attacker, RookDirections, PieceType.Rook) || IsAttackedAlongLines(board, square, attacker, BishopDirections, PieceType.Bishop);
+        }
+
+        static bool HasPiece(Board board, Square square, PieceType type, PieceColor color)
+        {
+            if (!square.IsValid) return false;
+
+            Piece piece = board.GetPiece(square);
+            return piece != null && piece.Type == type && piece.Color == color;
+        }
+
+        static bool IsAttackedAlongLines(Board board, Square square, PieceColor attacker, (int dx, int dy)[] directions, PieceType slider)
+        {
+            foreach(var (dx, dy) in directions)
+            {
+                var current = new Square(square.X + dx, square.Y + dy);
+
+                while (current.IsValid)
                 {
-                    if (move.To == square)
-                        return true;
+                    Piece piece = board.GetPiece(current);
+                    if(piece != null)
+                    {
+                        if (piece.Color == attacker && (piece.Type == slider || piece.Type == PieceType.Queen))
+                            return true;
+                        break;
+                    }
+
+                    current = new Square(current.X + dx, current.Y + dy);
                 }
             }
 
@@ -179,7 +234,7 @@ namespace Game.Core
             var pieces = new List<(Square square, Piece piece)>(board.AllPieces());
             var moves = new List<Move>();
 
-            foreach(var (square, piece) in pieces)
+            foreach (var (square, piece) in pieces)
             {
                 if (piece.Color == color)
                     moves.AddRange(GetLegalMoves(board, square));
