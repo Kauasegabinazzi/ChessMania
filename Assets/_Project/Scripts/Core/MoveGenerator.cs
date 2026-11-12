@@ -134,14 +134,14 @@ namespace Game.Core
 
         static bool IsAttackedAlongLines(Board board, Square square, PieceColor attacker, (int dx, int dy)[] directions, PieceType slider)
         {
-            foreach(var (dx, dy) in directions)
+            foreach (var (dx, dy) in directions)
             {
                 var current = new Square(square.X + dx, square.Y + dy);
 
                 while (current.IsValid)
                 {
                     Piece piece = board.GetPiece(current);
-                    if(piece != null)
+                    if (piece != null)
                     {
                         if (piece.Color == attacker && (piece.Type == slider || piece.Type == PieceType.Queen))
                             return true;
@@ -208,7 +208,8 @@ namespace Game.Core
             var oneStep = new Square(from.X, from.Y + direction);
             if (oneStep.IsValid && board.GetPiece(oneStep) == null)
             {
-                moves.Add(new Move(from, oneStep, piece, null));
+                //moves.Add(new Move(from, oneStep, piece, null));
+                AddPawnMove(from, oneStep, piece, null, moves);
                 var twoStep = new Square(from.X, from.Y + 2 * direction);
                 if (from.Y == startRank && board.GetPiece(twoStep) == null)
                 {
@@ -224,9 +225,29 @@ namespace Game.Core
                 Piece enemy = board.GetPiece(target);
                 if (enemy != null && enemy.Color != piece.Color)
                 {
-                    moves.Add(new Move(from, target, piece, enemy));
+                    //moves.Add(new Move(from, target, piece, enemy));
+                    AddPawnMove(from, target, piece, enemy, moves);
                 }
             }
+        }
+
+        static readonly PieceType[] PromotionTypes =
+        {
+            PieceType.Queen, PieceType.Rook, PieceType.Bishop, PieceType.Knight
+        };
+
+        static void AddPawnMove(Square from, Square to, Piece piece, Piece captured, List<Move> moves)
+        {
+            int lastRank = piece.Color == PieceColor.White ? 7 : 0;
+
+            if (to.Y != lastRank)
+            {
+                moves.Add(new Move(from, to, piece, captured));
+                return;
+            }
+
+            foreach (PieceType type in PromotionTypes)
+                moves.Add(new Move(from, to, piece, captured, type));
         }
 
         public static List<Move> GetAllLegalMoves(Board board, PieceColor color)

@@ -10,7 +10,7 @@ namespace Game.Core
         public int MoveCount => history.Count;
         public Move? LastMove => history.Count > 0 ? history.Peek() : (Move?)null;
         public PieceColor SideToMove => history.Count % 2 == 0 ? PieceColor.White : PieceColor.Black;
-        public Piece GetPiece (Square square)
+        public Piece GetPiece(Square square)
         {
             return square.IsValid ? squares[square.X, square.Y] : null;
         }
@@ -21,7 +21,7 @@ namespace Game.Core
         }
         public void Clear()
         {
-            for(int x = 0; x < 8; x++)
+            for (int x = 0; x < 8; x++)
             {
                 for (int y = 0; y < 8; y++)
                 {
@@ -48,7 +48,7 @@ namespace Game.Core
 
         public Square? FindKing(PieceColor color)
         {
-            foreach(var (square, piece) in AllPieces())
+            foreach (var (square, piece) in AllPieces())
             {
                 if (piece.Type == PieceType.King && piece.Color == color)
                 {
@@ -60,11 +60,14 @@ namespace Game.Core
 
         public void MakeMove(Move move)
         {
-            if(GetPiece(move.From) != move.Piece)
+            if (GetPiece(move.From) != move.Piece)
                 throw new InvalidOperationException($"MakeMove: {move} does not match the board.");
             SetPiece(move.To, move.Piece);
             SetPiece(move.From, null);
             move.Piece.HasMoved = true;
+
+            if (move.IsPromotion)
+                move.Piece.Type = move.Promotion.Value;
 
             history.Push(move);
         }
@@ -78,6 +81,9 @@ namespace Game.Core
             SetPiece(move.From, move.Piece);
             SetPiece(move.To, move.Captured);
             move.Piece.HasMoved = move.PieceHadMoved;
+
+            if (move.IsPromotion)
+                move.Piece.Type = PieceType.Pawn;
 
             return true;
         }

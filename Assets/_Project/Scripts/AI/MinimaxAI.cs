@@ -118,7 +118,14 @@ namespace Game.AI
 
         static int CaptureValue(Move move)
         {
-            return move.Captured == null ? 0 : Evaluation.PieceValue(move.Captured.Type);
+            //return move.Captured == null ? 0 : Evaluation.PieceValue(move.Captured.Type);
+
+            int value = move.Captured == null ? 0 : Evaluation.PieceValue(move.Captured.Type);
+
+            if (move.IsPromotion)
+                value += Evaluation.PieceValue(move.Promotion.Value);
+
+            return value;
         }
     }
 }

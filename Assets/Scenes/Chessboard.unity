@@ -174,10 +174,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.0011185682
-    y: 0.0019762847
-    width: 0.99776286
-    height: 0.9960475
+    x: 0.002247191
+    y: 0.001953125
+    width: 1.5550562
+    height: 1.125
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -733,7 +733,7 @@ MonoBehaviour:
   boardView: {fileID: 1985141052}
   mainCamera: {fileID: 0}
   statusView: {fileID: 1379336207}
-  playAgainstAI: 1
+  playAgainstAI: 0
   aiColor: 1
   aiDelay: 1
   aiLevel: 2

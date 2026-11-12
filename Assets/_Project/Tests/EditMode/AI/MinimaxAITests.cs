@@ -169,5 +169,18 @@ namespace Game.AI.Tests
 
             Assert.IsTrue(ignoredBest);
         }
+
+        [Test]
+        public void PromotesToQueen()
+        {
+            var board = new Board();
+            Place(board, "a1", PieceType.King, PieceColor.White);
+            Place(board, "h1", PieceType.King, PieceColor.Black);
+            Place(board, "e7", PieceType.Pawn, PieceColor.White);
+
+            Move? move = new MinimaxAI(1, 1).ChooseMove(board);
+
+            Assert.AreEqual(PieceType.Queen, move.Value.Promotion);
+        }
     }
 }

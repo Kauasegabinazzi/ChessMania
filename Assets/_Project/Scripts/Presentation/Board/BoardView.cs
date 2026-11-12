@@ -63,15 +63,18 @@ namespace Game.Presentation
 
         public void ApplyMove(Move move)
         {
-            if(move.Captured != null && views.TryGetValue(move.Captured, out PieceView captureView))
+            if (move.Captured != null && views.TryGetValue(move.Captured, out PieceView captureView))
             {
                 Destroy(captureView.gameObject);
                 views.Remove(move.Captured);
             }
-            if(views.TryGetValue(move.Piece, out PieceView view))
+            if (views.TryGetValue(move.Piece, out PieceView view))
             {
                 view.MoveTo(GridToWorld(move.To));
                 view.name = $"{move.Piece.Color} {move.Piece.Type} {move.To}";
+
+                if (move.IsPromotion)
+                    view.Refresh();
             }
         }
 
@@ -80,7 +83,7 @@ namespace Game.Presentation
             ClearHighlights();
             AddHighlight(selected, selectedColor);
 
-            foreach(var move in moves)
+            foreach (var move in moves)
             {
                 AddHighlight(move.To, move.IsCapture ? captureColor : moveColor);
             }
@@ -88,7 +91,7 @@ namespace Game.Presentation
 
         public void ClearHighlights()
         {
-            foreach(var highlight in highlights)
+            foreach (var highlight in highlights)
             {
                 if (highlight != null)
                     Destroy(highlight.gameObject);
@@ -145,7 +148,7 @@ namespace Game.Presentation
 
             foreach (var theme in themes)
             {
-                if(theme != null && theme.Id == themeId)
+                if (theme != null && theme.Id == themeId)
                 {
                     ApplyTheme(theme);
                     return true;
