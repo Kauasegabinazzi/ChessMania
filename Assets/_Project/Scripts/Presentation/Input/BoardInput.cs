@@ -168,7 +168,13 @@ namespace Game.Presentation
             aiThinking = true;
             yield return new WaitForSeconds(aiDelay);
 
+            var watch = System.Diagnostics.Stopwatch.StartNew();
             Move? move = ai.ChooseMove(boardView.Board);
+            watch.Stop();
+
+            if (ai is MinimaxAI minimax)
+                Debug.Log($"Minimax: {minimax.NodesSearched} posições em {watch.ElapsedMilliseconds} ms");
+
             aiThinking = false;
 
             if (move.HasValue)

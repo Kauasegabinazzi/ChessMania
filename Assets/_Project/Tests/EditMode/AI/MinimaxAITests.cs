@@ -79,5 +79,41 @@ namespace Game.AI.Tests
             Assert.AreEqual(0, board.MoveCount);
             Assert.AreEqual(PieceType.Pawn, board.GetPiece(Sq("e2")).Type);
         }
+
+        [Test]
+        public void Depth3_AvoidsDefendedPawn()
+        {
+            Move? move = new MinimaxAI(3, 1).ChooseMove(DefendedPawnPosition());
+
+            Assert.AreNotEqual(Sq("d5"), move.Value.To);
+        }
+
+        [Test]
+        public void Depth3_FindsMateInOne()
+        {
+            var board = new Board();
+            Place(board, "g1", PieceType.King, PieceColor.White);
+            Place(board, "a1", PieceType.Rook, PieceColor.White);
+            Place(board, "f3", PieceType.Knight, PieceColor.White);
+            Place(board, "h8", PieceType.King, PieceColor.Black);
+            Place(board, "g7", PieceType.Pawn, PieceColor.Black);
+            Place(board, "h7", PieceType.Pawn, PieceColor.Black);
+            Place(board, "h4", PieceType.Rook, PieceColor.Black);
+
+            Move? move = new MinimaxAI(3, 1).ChooseMove(board);
+
+            Assert.AreEqual(Sq("a8"), move.Value.To);
+        }
+
+        [Test]
+        public void Depth3_InitialPosition_PrunesTheTree()
+        {
+            var board = new Board();
+            board.SetupInitialPosition();
+            var ai = new MinimaxAI(3);
+            ai.ChooseMove(board);
+
+            Assert.Less(ai.NodesSearched, 8902);
+        }
     }
 }

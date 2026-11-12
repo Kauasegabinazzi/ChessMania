@@ -182,7 +182,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 5.5
+  orthographic size: 15.65625
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -736,6 +736,8 @@ MonoBehaviour:
   playAgainstAI: 1
   aiColor: 1
   aiDelay: 1
+  aiLevel: 2
+  aiDepth: 3
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

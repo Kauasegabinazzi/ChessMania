@@ -10,6 +10,7 @@ namespace Game.AI
 
         readonly int depth;
         readonly Random random;
+        public int NodesSearched { get; private set; }
 
         public MinimaxAI(int depth, int? seed = null)
         {
@@ -19,8 +20,11 @@ namespace Game.AI
 
         public Move? ChooseMove(Board board)
         {
+            NodesSearched = 0;
             var moves = MoveGenerator.GetAllLegalMoves(board, board.SideToMove);
             if (moves.Count == 0) return null;
+
+            OrderMoves(moves);
 
             var bestMoves = new List<Move>();
             int bestScore = -Infinity;
@@ -28,7 +32,7 @@ namespace Game.AI
             foreach (var move in moves)
             {
                 board.MakeMove(move);
-                int score = -Search(board, depth - 1, 1);
+                int score = -Search(board, depth - 1, 1, -Infinity, -(bestScore - 1));
                 board.UndoMove();
 
                 if (score > bestScore)
@@ -46,8 +50,9 @@ namespace Game.AI
             return bestMoves[random.Next(bestMoves.Count)];
         }
 
-        int Search(Board board, int depth, int ply)
+        int Search(Board board, int depth, int ply, int alpha, int beta)
         {
+            NodesSearched++;
             PieceColor side = board.SideToMove;
             var moves = MoveGenerator.GetAllLegalMoves(board, side);
 
@@ -56,19 +61,32 @@ namespace Game.AI
             if (depth == 0)
                 return Evaluation.Evaluate(board, side);
 
-            int best = -Infinity;
+            OrderMoves(moves);
 
-            foreach(var move in moves)
+            foreach (var move in moves)
             {
                 board.MakeMove(move);
-                int score = -Search(board, depth - 1, ply + 1);
+                int score = -Search(board, depth - 1, ply + 1, -beta, -alpha);
                 board.UndoMove();
 
-                if (score > best)
-                    best = score;
+                if (score >= beta)
+                    return beta;
+
+                if (score > alpha)
+                    alpha = score;
             }
 
-            return best;
+            return alpha;
+        }
+
+        static void OrderMoves(List<Move> moves)
+        {
+            moves.Sort((a, b) => CaptureValue(b).CompareTo(CaptureValue(a)));
+        }
+
+        static int CaptureValue(Move move)
+        {
+            return move.Captured == null ? 0 : Evaluation.PieceValue(move.Captured.Type);
         }
     }
 }
