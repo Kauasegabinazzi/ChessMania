@@ -20,6 +20,8 @@ namespace Game.Presentation
         [SerializeField] float aiDelay = 0.5f;
         [SerializeField] AILevel aiLevel = AILevel.Greedy;
         [SerializeField, Range(1, 4)] int aiDepth = 2;
+        [SerializeField, Range(0, 200)] int aiMargin = 0;
+        [SerializeField, Range(0f, 1f)] float aiMistakeChance = 0f;
 
         IChessAI ai;
         bool aiThinking;
@@ -35,7 +37,7 @@ namespace Game.Presentation
             ai = aiLevel switch
             {
                 AILevel.Greedy => new GreedyAI(),
-                AILevel.Minimax => new MinimaxAI(aiDepth),
+                AILevel.Minimax => new MinimaxAI(aiDepth) { ScoreMargin = aiMargin, MistakeChance = aiMistakeChance },
                 _ => new RandomAI()
             };
         }

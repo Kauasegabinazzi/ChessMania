@@ -115,5 +115,59 @@ namespace Game.AI.Tests
 
             Assert.Less(ai.NodesSearched, 8902);
         }
+
+        static Board RookCanTakeBishopOrKnight()
+        {
+            var board = new Board();
+            Place(board, "a1", PieceType.King, PieceColor.White);
+            Place(board, "e4", PieceType.Rook, PieceColor.White);
+            Place(board, "h7", PieceType.King, PieceColor.Black);
+            Place(board, "e8", PieceType.Bishop, PieceColor.Black);
+            Place(board, "a4", PieceType.Knight, PieceColor.Black);
+            return board;
+        }
+
+        [Test]
+        public void Margin0_AlwaysTakesBishop()
+        {
+            for (int seed = 0; seed < 20; seed++)
+            {
+                Move? move = new MinimaxAI(1, seed).ChooseMove(RookCanTakeBishopOrKnight());
+                Assert.AreEqual(Sq("e8"), move.Value.To);
+            }
+        }
+
+        [Test]
+        public void Margin20_SometimesTakesKnight()
+        {
+            bool tookKnight = false;
+
+            for (int seed = 0; seed < 20; seed++)
+            {
+                var ai = new MinimaxAI(1, seed) { ScoreMargin = 20 };
+                Move? move = ai.ChooseMove(RookCanTakeBishopOrKnight());
+
+                Assert.That(move.Value.To == Sq("e8") || move.Value.To == Sq("a4"));
+                if (move.Value.To == Sq("a4")) tookKnight = true;
+            }
+
+            Assert.IsTrue(tookKnight);
+        }
+
+        [Test]
+        public void MistakeChance1_SometimesIgnoresBestMove()
+        {
+            bool ignoredBest = false;
+
+            for (int seed = 0; seed < 20; seed++)
+            {
+                var ai = new MinimaxAI(1, seed) { MistakeChance = 1 };
+                Move? move = ai.ChooseMove(RookCanTakeBishopOrKnight());
+
+                if (move.Value.To != Sq("e8")) ignoredBest = true;
+            }
+
+            Assert.IsTrue(ignoredBest);
+        }
     }
 }

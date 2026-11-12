@@ -11,6 +11,8 @@ namespace Game.AI
         readonly int depth;
         readonly Random random;
         public int NodesSearched { get; private set; }
+        public int ScoreMargin { get; set; }
+        public double MistakeChance { get; set; }
 
         public MinimaxAI(int depth, int? seed = null)
         {
@@ -18,36 +20,66 @@ namespace Game.AI
             random = seed.HasValue ? new Random(seed.Value) : new Random();
         }
 
+        //public Move? ChooseMove(Board board)
+        //{
+        //    NodesSearched = 0;
+        //    var moves = MoveGenerator.GetAllLegalMoves(board, board.SideToMove);
+        //    if (moves.Count == 0) return null;
+
+        //    OrderMoves(moves);
+
+        //    var bestMoves = new List<Move>();
+        //    int bestScore = -Infinity;
+
+        //    foreach (var move in moves)
+        //    {
+        //        board.MakeMove(move);
+        //        int score = -Search(board, depth - 1, 1, -Infinity, -(bestScore - 1));
+        //        board.UndoMove();
+
+        //        if (score > bestScore)
+        //        {
+        //            bestScore = score;
+        //            bestMoves.Clear();
+        //            bestMoves.Add(move);
+        //        }
+        //        else if (score == bestScore)
+        //        {
+        //            bestMoves.Add(move);
+        //        }
+        //    }
+
+        //    return bestMoves[random.Next(bestMoves.Count)];
+        //}
+
         public Move? ChooseMove(Board board)
         {
             NodesSearched = 0;
             var moves = MoveGenerator.GetAllLegalMoves(board, board.SideToMove);
             if (moves.Count == 0) return null;
 
+            if (MistakeChance > 0 && random.NextDouble() < MistakeChance)
+                return moves[random.Next(moves.Count)];
+
             OrderMoves(moves);
 
-            var bestMoves = new List<Move>();
+            var scored = new List<(Move move, int score)>();
             int bestScore = -Infinity;
 
             foreach (var move in moves)
             {
                 board.MakeMove(move);
-                int score = -Search(board, depth - 1, 1, -Infinity, -(bestScore - 1));
+                int score = -Search(board, depth - 1, 1, -Infinity, -(bestScore - ScoreMargin - 1));
                 board.UndoMove();
 
+                scored.Add((move, score));
+
                 if (score > bestScore)
-                {
                     bestScore = score;
-                    bestMoves.Clear();
-                    bestMoves.Add(move);
-                }
-                else if (score == bestScore)
-                {
-                    bestMoves.Add(move);
-                }
             }
 
-            return bestMoves[random.Next(bestMoves.Count)];
+            var candidates = scored.FindAll(s => s.score >= bestScore - ScoreMargin);
+            return candidates[random.Next(candidates.Count)].move;
         }
 
         int Search(Board board, int depth, int ply, int alpha, int beta)

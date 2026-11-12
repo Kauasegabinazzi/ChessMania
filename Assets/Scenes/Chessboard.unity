@@ -174,9 +174,9 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0
+    x: 0.0011185682
     y: 0.0019762847
-    width: 1
+    width: 0.99776286
     height: 0.9960475
   near clip plane: 0.3
   far clip plane: 1000
@@ -737,7 +737,9 @@ MonoBehaviour:
   aiColor: 1
   aiDelay: 1
   aiLevel: 2
-  aiDepth: 3
+  aiDepth: 2
+  aiMargin: 40
+  aiMistakeChance: 0.1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
