@@ -5,6 +5,9 @@ namespace Game.Core
         InProgress,
         Check,
         Checkmate,
-        Stalemate
+        Stalemate,
+        DrawInsufficientMaterial,
+        DrawFiftyMoves,
+        DrawRepetition
     }
 }

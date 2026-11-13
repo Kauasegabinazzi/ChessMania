@@ -9,6 +9,21 @@ namespace Game.Core
         readonly Stack<Move> history = new Stack<Move>();
         public int MoveCount => history.Count;
         public Move? LastMove => history.Count > 0 ? history.Peek() : (Move?)null;
+
+        public int HalfmoveClock
+        {
+            get
+            {
+                int count = 0;
+                foreach(Move move in history)
+                {
+                    if (move.IsCapture || move.IsPromotion || move.Piece.Type == PieceType.Pawn) break;
+                    count++;
+                }
+                return count;
+            }
+        }
+
         public PieceColor SideToMove => history.Count % 2 == 0 ? PieceColor.White : PieceColor.Black;
         public Piece GetPiece(Square square)
         {

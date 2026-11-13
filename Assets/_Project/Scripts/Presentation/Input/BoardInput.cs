@@ -51,7 +51,7 @@ namespace Game.Presentation
         void Update()
         {
             Keyboard keyboard = Keyboard.current;
-            if(keyboard != null && keyboard.rKey.wasPressedThisFrame)
+            if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
             {
                 Restart();
                 return;
@@ -111,9 +111,9 @@ namespace Game.Presentation
 
         bool TryFindMove(Square to, out Move move)
         {
-            foreach(var candidate in selectedMoves)
+            foreach (var candidate in selectedMoves)
             {
-                if(candidate.To == to)
+                if (candidate.To == to)
                 {
                     move = candidate;
                     return true;
@@ -130,7 +130,7 @@ namespace Game.Presentation
             if (board == null) return;
 
             GameStatus status = MoveGenerator.GetStatus(board);
-            gameOver = status == GameStatus.Checkmate || status == GameStatus.Stalemate;
+            gameOver = status != GameStatus.InProgress && status != GameStatus.Check;
 
             if (statusView != null)
                 statusView.Show(status, board.SideToMove);

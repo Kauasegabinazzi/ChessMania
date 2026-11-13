@@ -321,6 +321,12 @@ namespace Game.Core
 
             if (!hasMoves)
                 return inCheck ? GameStatus.Checkmate : GameStatus.Stalemate;
+            if (DrawRules.IsInsufficientMaterial(board))
+                return GameStatus.DrawInsufficientMaterial;
+            if (DrawRules.IsFiftyMoveRule(board))
+                return GameStatus.DrawFiftyMoves;
+            if (DrawRules.IsThreefoldRepetition(board))
+                return GameStatus.DrawRepetition;
 
             return inCheck ? GameStatus.Check : GameStatus.InProgress;
         }
