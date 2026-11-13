@@ -1,5 +1,6 @@
 using NUnit.Framework;
 using Game.Core;
+using System.Collections;
 
 namespace Game.AI.Tests
 {
@@ -230,6 +231,23 @@ namespace Game.AI.Tests
 
                 Assert.AreNotEqual(Sq("d2"), move.Value.To, $"seed {seed}");
             }
+        }
+
+        [Test]
+        public void Think_GivesSameMoveAsChooseMove_AndKeepsBoardIntact()
+        {
+            var board = new Board();
+            board.SetupInitialPosition();
+
+            Move? expected = new MinimaxAI(3, 7).ChooseMove(board);
+
+            var ai = new MinimaxAI(3, 7);
+            IEnumerator thinking = ai.Think(board);
+            while (thinking.MoveNext())
+                Assert.AreEqual(0, board.MoveCount);
+
+            Assert.AreEqual(expected.Value.From, ai.Result.Value.From);
+            Assert.AreEqual(expected.Value.To, ai.Result.Value.To);
         }
 
     }

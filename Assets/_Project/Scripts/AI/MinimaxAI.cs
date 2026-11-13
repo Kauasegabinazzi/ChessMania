@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Core;
+using System.Collections;
 
 namespace Game.AI
 {
@@ -14,6 +15,8 @@ namespace Game.AI
         public int ScoreMargin { get; set; }
         public double MistakeChance { get; set; }
         readonly List<ulong> path = new List<ulong>();
+        const int SliceMiliseconds = 15;
+        public Move? Result { get; private set; }
 
         public MinimaxAI(int depth, int? seed = null)
         {
@@ -53,37 +56,37 @@ namespace Game.AI
         //    return bestMoves[random.Next(bestMoves.Count)];
         //}
 
-        public Move? ChooseMove(Board board)
-        {
-            NodesSearched = 0;
-            var moves = MoveGenerator.GetAllLegalMoves(board, board.SideToMove);
-            if (moves.Count == 0) return null;
+        //public Move? ChooseMove(Board board)
+        //{
+        //    NodesSearched = 0;
+        //    var moves = MoveGenerator.GetAllLegalMoves(board, board.SideToMove);
+        //    if (moves.Count == 0) return null;
 
-            if (MistakeChance > 0 && random.NextDouble() < MistakeChance)
-                return moves[random.Next(moves.Count)];
+        //    if (MistakeChance > 0 && random.NextDouble() < MistakeChance)
+        //        return moves[random.Next(moves.Count)];
 
-            BuildPath(board);
+        //    BuildPath(board);
 
-            OrderMoves(moves);
+        //    OrderMoves(moves);
 
-            var scored = new List<(Move move, int score)>();
-            int bestScore = -Infinity;
+        //    var scored = new List<(Move move, int score)>();
+        //    int bestScore = -Infinity;
 
-            foreach (var move in moves)
-            {
-                board.MakeMove(move);
-                int score = -Search(board, depth - 1, 1, -Infinity, -(bestScore - ScoreMargin - 1));
-                board.UndoMove();
+        //    foreach (var move in moves)
+        //    {
+        //        board.MakeMove(move);
+        //        int score = -Search(board, depth - 1, 1, -Infinity, -(bestScore - ScoreMargin - 1));
+        //        board.UndoMove();
 
-                scored.Add((move, score));
+        //        scored.Add((move, score));
 
-                if (score > bestScore)
-                    bestScore = score;
-            }
+        //        if (score > bestScore)
+        //            bestScore = score;
+        //    }
 
-            var candidates = scored.FindAll(s => s.score >= bestScore - ScoreMargin);
-            return candidates[random.Next(candidates.Count)].move;
-        }
+        //    var candidates = scored.FindAll(s => s.score >= bestScore - ScoreMargin);
+        //    return candidates[random.Next(candidates.Count)].move;
+        //}
 
         void BuildPath(Board board)
         {
@@ -178,6 +181,56 @@ namespace Game.AI
                 value += Evaluation.PieceValue(move.Promotion.Value);
 
             return value;
+        }
+
+        public Move? ChooseMove(Board board)
+        {
+            IEnumerator thinking = Think(board);
+            while (thinking.MoveNext()) { }
+            return Result;
+        }
+
+        public IEnumerator Think(Board board)
+        {
+            Result = null;
+            NodesSearched = 0;
+            var moves = MoveGenerator.GetAllLegalMoves(board, board.SideToMove);
+            if (moves.Count == 0) yield break;
+
+            if (MistakeChance > 0 && random.NextDouble() < MistakeChance)
+            {
+                Result = moves[random.Next(moves.Count)];
+                yield break;
+            }
+
+            BuildPath(board);
+
+            OrderMoves(moves);
+
+            var scored = new List<(Move move, int score)>();
+            int bestScore = -Infinity;
+            var slice = System.Diagnostics.Stopwatch.StartNew();
+
+            foreach (var move in moves)
+            {
+                board.MakeMove(move);
+                int score = -Search(board, depth - 1, 1, -Infinity, -(bestScore - ScoreMargin - 1));
+                board.UndoMove();
+
+                scored.Add((move, score));
+
+                if (score > bestScore)
+                    bestScore = score;
+
+                if(slice.ElapsedMilliseconds >= SliceMiliseconds)
+                {
+                    yield return null;
+                    slice.Restart();
+                }
+            }
+
+            var candidates = scored.FindAll(s => s.score >= bestScore - ScoreMargin);
+            Result = candidates[random.Next(candidates.Count)].move;
         }
     }
 }

@@ -25,6 +25,7 @@ namespace Game.Presentation
         [SerializeField, Range(0f, 1f)] float aiMistakeChance = 0f;
         [SerializeField] bool useDifficultyPresets = true;
         [SerializeField, Range(0, 3)] int difficulty = 1;
+        [SerializeField] bool forceTimeSlicing = false;
 
         IChessAI ai;
         bool aiThinking;
@@ -183,35 +184,35 @@ namespace Game.Presentation
             StartCoroutine(AITurn());
         }
 
-        IEnumerator AITurn()
-        {
-            aiThinking = true;
-            yield return new WaitForSeconds(aiDelay);
+        //IEnumerator AITurn()
+        //{
+        //    aiThinking = true;
+        //    yield return new WaitForSeconds(aiDelay);
 
-            Board board = boardView.Board;
-            IChessAI thinker = ai;
+        //    Board board = boardView.Board;
+        //    IChessAI thinker = ai;
 
-            var watch = System.Diagnostics.Stopwatch.StartNew();
-            Task<Move?> task = Task.Run(() => thinker.ChooseMove(board));
+        //    var watch = System.Diagnostics.Stopwatch.StartNew();
+        //    Task<Move?> task = Task.Run(() => thinker.ChooseMove(board));
 
-            while (!task.IsCompleted)
-                yield return null;
+        //    while (!task.IsCompleted)
+        //        yield return null;
 
-            watch.Stop();
-            aiThinking = false;
+        //    watch.Stop();
+        //    aiThinking = false;
 
-            if (task.IsFaulted)
-            {
-                Debug.LogException(task.Exception);
-                yield break;
-            }
+        //    if (task.IsFaulted)
+        //    {
+        //        Debug.LogException(task.Exception);
+        //        yield break;
+        //    }
 
-            if (thinker is MinimaxAI minimax)
-                Debug.Log($"Minimax: {minimax.NodesSearched} posições em {watch.ElapsedMilliseconds} ms");
+        //    if (thinker is MinimaxAI minimax)
+        //        Debug.Log($"Minimax: {minimax.NodesSearched} posições em {watch.ElapsedMilliseconds} ms");
 
-            if (task.Result.HasValue)
-                PlayMove(task.Result.Value);
-        }
+        //    if (task.Result.HasValue)
+        //        PlayMove(task.Result.Value);
+        //}
 
         //    Move? move = ai.ChooseMove(boardView.Board);
         //    watch.Stop();
@@ -224,6 +225,8 @@ namespace Game.Presentation
         //    if (move.HasValue)
         //        PlayMove(move.Value);
         //}
+
+        bool UseTimeSlicing => forceTimeSlicing || Application.platform == RuntimePlatform.WebGLPlayer;
 
         void CreateAI()
         {
@@ -252,6 +255,50 @@ namespace Game.Presentation
             if (keyboard.digit3Key.wasPressedThisFrame) return 2;
             if (keyboard.digit4Key.wasPressedThisFrame) return 3;
             return -1;
+        }
+
+        IEnumerator AITurn()
+        {
+            aiThinking = true;
+            yield return new WaitForSeconds(aiDelay);
+
+            Board board = boardView.Board;
+            IChessAI thinker = ai;
+            var minimax = thinker as MinimaxAI;
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            Move? move;
+
+            if (minimax != null && UseTimeSlicing)
+            {
+                IEnumerator thinking = minimax.Think(board);
+
+                while (thinking.MoveNext())
+                    yield return null;
+                move = minimax.Result;
+            }
+            else
+            {
+                Task<Move?> task = Task.Run(() => thinker.ChooseMove(board));
+                while (!task.IsCompleted)
+                    yield return null;
+                if (task.IsFaulted)
+                {
+                    aiThinking = false;
+                    Debug.LogException(task.Exception);
+                    yield break;
+                }
+
+                move = task.Result;
+            }
+
+            watch.Stop();
+            aiThinking = false;
+
+            if (minimax != null)
+                Debug.Log($"Minimax: {minimax.NodesSearched} posições em {watch.ElapsedMilliseconds} ms");
+
+            if (move.HasValue)
+                PlayMove(move.Value);
         }
     }
 }

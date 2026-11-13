@@ -174,10 +174,10 @@ Camera:
   m_LensShift: {x: 0, y: 0}
   m_NormalizedViewPortRect:
     serializedVersion: 2
-    x: 0.0011655012
+    x: 0
     y: 0
-    width: 0.99766904
-    height: 0.99806577
+    width: 0.69868994
+    height: 0.8333333
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -741,6 +741,9 @@ MonoBehaviour:
   aiDepth: 3
   aiMargin: 0
   aiMistakeChance: 0
+  useDifficultyPresets: 1
+  difficulty: 1
+  forceTimeSlicing: 0
 --- !u!1 &2120925116
 GameObject:
   m_ObjectHideFlags: 0
