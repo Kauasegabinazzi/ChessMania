@@ -1,3 +1,5 @@
+using System;
+
 namespace Game.Core
 {
     public readonly struct Move
@@ -8,6 +10,9 @@ namespace Game.Core
         public readonly Piece Captured;
         public readonly bool PieceHadMoved;
         public readonly PieceType? Promotion;
+        public bool IsCastling => Piece.Type == PieceType.King && Math.Abs(To.X - From.X) == 2;
+        public Square CastlingRookFrom => new Square(To.X > From.X ? 7 : 0, From.Y);
+        public Square CastlingRookTo => new Square((From.X + To.X) / 2, From.Y);
 
         public Move(Square from, Square to, Piece piece, Piece captured, PieceType? promotion = null)
         {

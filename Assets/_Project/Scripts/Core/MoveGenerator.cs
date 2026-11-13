@@ -52,10 +52,42 @@ namespace Game.Core
                     break;
                 case PieceType.King:
                     AddJumpMoves(board, from, piece, KingOffsets, moves);
+                    AddCastlingMoves(board, from, piece, moves);
                     break;
             }
 
             return moves;
+        }
+
+        static void AddCastlingMoves(Board board, Square from, Piece king, List<Move> moves)
+        {
+            int homeRank = king.Color == PieceColor.White ? 0 : 7;
+            if (king.HasMoved || from.X != 4 || from.Y != homeRank) return;
+
+            PieceColor enemy = king.Color.Opponent();
+            if (IsSquareAttacked(board, from, enemy)) return;
+
+            TryAddCastling(board, from, king, 7, enemy, moves);
+            TryAddCastling(board, from, king, 0, enemy, moves);
+        }
+
+        static void TryAddCastling(Board board, Square from, Piece king, int rookFile, PieceColor enemy, List<Move> moves)
+        {
+            Piece rook = board.GetPiece(new Square(rookFile, from.Y));
+            if (rook == null || rook.Type != PieceType.Rook || rook.Color != king.Color || rook.HasMoved) return;
+
+            int step = rookFile > from.X ? 1 : -1;
+
+            for (int x = from.X + step; x != rookFile; x += step)
+            {
+                if (board.GetPiece(new Square(x, from.Y)) != null) return;
+            }
+
+            var passing = new Square(from.X + step, from.Y);
+            if (IsSquareAttacked(board, passing, enemy)) return;
+
+            var target = new Square(from.X + 2 * step, from.Y);
+            moves.Add(new Move(from, target, king, null));
         }
 
         public static List<Move> GetLegalMoves(Board board, Square from)

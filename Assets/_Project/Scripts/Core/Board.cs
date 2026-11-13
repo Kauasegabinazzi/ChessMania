@@ -69,6 +69,14 @@ namespace Game.Core
             if (move.IsPromotion)
                 move.Piece.Type = move.Promotion.Value;
 
+            if (move.IsCastling)
+            {
+                Piece rook = GetPiece(move.CastlingRookFrom);
+                SetPiece(move.CastlingRookTo, rook);
+                SetPiece(move.CastlingRookFrom, null);
+                rook.HasMoved = true;
+            }
+
             history.Push(move);
         }
 
@@ -84,6 +92,14 @@ namespace Game.Core
 
             if (move.IsPromotion)
                 move.Piece.Type = PieceType.Pawn;
+
+            if (move.IsCastling)
+            {
+                Piece rook = GetPiece(move.CastlingRookTo);
+                SetPiece(move.CastlingRookFrom, rook);
+                SetPiece(move.CastlingRookTo, null);
+                rook.HasMoved = false;
+            }
 
             return true;
         }

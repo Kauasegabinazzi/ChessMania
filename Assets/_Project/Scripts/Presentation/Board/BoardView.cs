@@ -76,6 +76,15 @@ namespace Game.Presentation
                 if (move.IsPromotion)
                     view.Refresh();
             }
+            if (move.IsCastling)
+            {
+                Piece rook = board.GetPiece(move.CastlingRookTo);
+                if (rook != null && views.TryGetValue(rook, out PieceView rookView))
+                {
+                    rookView.MoveTo(GridToWorld(move.CastlingRookTo));
+                    rookView.name = $"{rook.Color} {rook.Type} {move.CastlingRookTo}";
+                }
+            }
         }
 
         public void ShowHighlights(Square selected, List<Move> moves)
