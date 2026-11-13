@@ -64,6 +64,9 @@ namespace Game.Core
                 throw new InvalidOperationException($"MakeMove: {move} does not match the board.");
             SetPiece(move.To, move.Piece);
             SetPiece(move.From, null);
+            if (move.IsEnPassant)
+                SetPiece(move.CapturedSquare, null);
+
             move.Piece.HasMoved = true;
 
             if (move.IsPromotion)
@@ -87,7 +90,11 @@ namespace Game.Core
             Move move = history.Pop();
 
             SetPiece(move.From, move.Piece);
-            SetPiece(move.To, move.Captured);
+            //SetPiece(move.To, move.Captured);
+
+            SetPiece(move.To, null);
+            SetPiece(move.CapturedSquare, move.Captured);
+
             move.Piece.HasMoved = move.PieceHadMoved;
 
             if (move.IsPromotion)

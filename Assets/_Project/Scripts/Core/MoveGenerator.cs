@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 
 namespace Game.Core
 {
@@ -261,6 +262,22 @@ namespace Game.Core
                     AddPawnMove(from, target, piece, enemy, moves);
                 }
             }
+
+            AddEnPassant(board, from, piece, direction, moves);
+        }
+
+        static void AddEnPassant(Board board, Square from, Piece piece, int direction, List<Move> moves)
+        {
+            Move? last = board.LastMove;
+            if (!last.HasValue) return;
+
+            Move previous = last.Value;
+            if (previous.Piece.Type != PieceType.Pawn || previous.Piece.Color == piece.Color) return;
+            if (Math.Abs(previous.To.Y - previous.From.Y) != 2) return;
+            if (previous.To.Y != from.Y || Math.Abs(previous.To.X - from.X) != 1) return;
+
+            var target = new Square(previous.To.X, from.Y + direction);
+            moves.Add(new Move(from, target, piece, previous.Piece, isEnPassant: true));
         }
 
         static readonly PieceType[] PromotionTypes =
