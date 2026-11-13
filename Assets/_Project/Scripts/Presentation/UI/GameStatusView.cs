@@ -7,6 +7,7 @@ namespace Game.Presentation
     public class GameStatusView : MonoBehaviour
     {
         [SerializeField] TextMeshPro label;
+        [SerializeField] TextMeshPro difficultyLabel;
 
         public void Show(GameStatus status, PieceColor sideToMove)
         {
@@ -20,6 +21,12 @@ namespace Game.Presentation
                 GameStatus.DrawRepetition => "Draw : repetition",
                 _ => $"{sideToMove} to move"
             };
+        }
+
+        public void ShowDifficulty(string name)
+        {
+            if(difficultyLabel != null)
+                difficultyLabel.text = $"AI: {name}   1-4 level   R restart";
         }
     }
 }

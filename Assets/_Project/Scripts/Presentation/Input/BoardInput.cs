@@ -4,6 +4,7 @@ using Game.Core;
 using UnityEngine.InputSystem;
 using System.Collections;
 using Game.AI;
+using System.Threading.Tasks;
 
 namespace Game.Presentation
 {
@@ -22,6 +23,8 @@ namespace Game.Presentation
         [SerializeField, Range(1, 4)] int aiDepth = 2;
         [SerializeField, Range(0, 200)] int aiMargin = 0;
         [SerializeField, Range(0f, 1f)] float aiMistakeChance = 0f;
+        [SerializeField] bool useDifficultyPresets = true;
+        [SerializeField, Range(0, 3)] int difficulty = 1;
 
         IChessAI ai;
         bool aiThinking;
@@ -34,12 +37,14 @@ namespace Game.Presentation
             if (mainCamera == null)
                 mainCamera = Camera.main;
 
-            ai = aiLevel switch
-            {
-                AILevel.Greedy => new GreedyAI(),
-                AILevel.Minimax => new MinimaxAI(aiDepth) { ScoreMargin = aiMargin, MistakeChance = aiMistakeChance },
-                _ => new RandomAI()
-            };
+            //ai = aiLevel switch
+            //{
+            //    AILevel.Greedy => new GreedyAI(),
+            //    AILevel.Minimax => new MinimaxAI(aiDepth) { ScoreMargin = aiMargin, MistakeChance = aiMistakeChance },
+            //    _ => new RandomAI()
+            //};
+
+            CreateAI();
         }
 
         void Start()
@@ -51,10 +56,22 @@ namespace Game.Presentation
         void Update()
         {
             Keyboard keyboard = Keyboard.current;
-            if (keyboard != null && keyboard.rKey.wasPressedThisFrame)
+            if (keyboard != null)
             {
-                Restart();
-                return;
+                if (keyboard.rKey.wasPressedThisFrame)
+                {
+                    Restart();
+                    return;
+                }
+
+                int chosen = PressedDifficulty(keyboard);
+                if (chosen >= 0)
+                {
+                    difficulty = chosen;
+                    useDifficultyPresets = true;
+                    Restart();
+                    return;
+                }
             }
             if (gameOver || aiThinking) return;
 
@@ -139,6 +156,7 @@ namespace Game.Presentation
         void Restart()
         {
             StopAllCoroutines();
+            CreateAI();
             aiThinking = false;
             var board = new Board();
             board.SetupInitialPosition();
@@ -170,18 +188,70 @@ namespace Game.Presentation
             aiThinking = true;
             yield return new WaitForSeconds(aiDelay);
 
+            Board board = boardView.Board;
+            IChessAI thinker = ai;
+
             var watch = System.Diagnostics.Stopwatch.StartNew();
-            Move? move = ai.ChooseMove(boardView.Board);
+            Task<Move?> task = Task.Run(() => thinker.ChooseMove(board));
+
+            while (!task.IsCompleted)
+                yield return null;
+
             watch.Stop();
-
-            if (ai is MinimaxAI minimax)
-                Debug.Log($"Minimax: {minimax.NodesSearched} posições em {watch.ElapsedMilliseconds} ms");
-
             aiThinking = false;
 
-            if (move.HasValue)
-                PlayMove(move.Value);
+            if (task.IsFaulted)
+            {
+                Debug.LogException(task.Exception);
+                yield break;
+            }
+
+            if (thinker is MinimaxAI minimax)
+                Debug.Log($"Minimax: {minimax.NodesSearched} posições em {watch.ElapsedMilliseconds} ms");
+
+            if (task.Result.HasValue)
+                PlayMove(task.Result.Value);
         }
 
+        //    Move? move = ai.ChooseMove(boardView.Board);
+        //    watch.Stop();
+
+        //    if (ai is MinimaxAI minimax)
+        //        Debug.Log($"Minimax: {minimax.NodesSearched} posições em {watch.ElapsedMilliseconds} ms");
+
+        //    aiThinking = false;
+
+        //    if (move.HasValue)
+        //        PlayMove(move.Value);
+        //}
+
+        void CreateAI()
+        {
+            if (useDifficultyPresets)
+            {
+                ai = AIPresets.All[difficulty].Create();
+            }
+            else
+            {
+                ai = aiLevel switch
+                {
+                    AILevel.Greedy => new GreedyAI(),
+                    AILevel.Minimax => new MinimaxAI(aiDepth) { ScoreMargin = aiMargin, MistakeChance = aiMistakeChance },
+                    _ => new RandomAI()
+                };
+            }
+
+            if (statusView != null)
+                statusView.ShowDifficulty(useDifficultyPresets ? AIPresets.All[difficulty].Name : aiLevel.ToString());
+        }
+
+        static int PressedDifficulty(Keyboard keyboard)
+        {
+            if (keyboard.digit1Key.wasPressedThisFrame) return 0;
+            if (keyboard.digit2Key.wasPressedThisFrame) return 1;
+            if (keyboard.digit3Key.wasPressedThisFrame) return 2;
+            if (keyboard.digit4Key.wasPressedThisFrame) return 3;
+            return -1;
+        }
     }
 }
