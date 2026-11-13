@@ -23,6 +23,12 @@ namespace Game.AI.Tests
             return board;
         }
 
+        static void Play(Board board, string from, string to)
+        {
+            Move move = MoveGenerator.GetLegalMoves(board, Sq(from)).Find(m => m.To == Sq(to));
+            board.MakeMove(move);
+        }
+
         [Test]
         public void Depth1_TakesDefendedPawn()
         {
@@ -182,5 +188,49 @@ namespace Game.AI.Tests
 
             Assert.AreEqual(PieceType.Queen, move.Value.Promotion);
         }
+
+        [Test]
+        public void LosingSide_SeeksRepetition()
+        {
+            for (int seed = 0; seed < 10; seed++)
+            {
+                var board = new Board();
+                Place(board, "a1", PieceType.King, PieceColor.White);
+                Place(board, "d1", PieceType.Queen, PieceColor.White);
+                Place(board, "h8", PieceType.King, PieceColor.Black);
+                Place(board, "g8", PieceType.Knight, PieceColor.Black);
+
+                Play(board, "d1", "d2");
+                Play(board, "g8", "f6");
+                Play(board, "d2", "d1");
+
+                Move? move = new MinimaxAI(1, seed).ChooseMove(board);
+
+                Assert.AreEqual(Sq("g8"), move.Value.To, $"seed {seed}");
+            }
+        }
+
+        [Test]
+        public void WinningSide_AvoidsRepetition()
+        {
+            for (int seed = 0; seed < 10; seed++)
+            {
+                var board = new Board();
+                Place(board, "a1", PieceType.King, PieceColor.White);
+                Place(board, "d1", PieceType.Queen, PieceColor.White);
+                Place(board, "h8", PieceType.King, PieceColor.Black);
+                Place(board, "b8", PieceType.Knight, PieceColor.Black);
+
+                Play(board, "d1", "d2");
+                Play(board, "b8", "c6");
+                Play(board, "d2", "d3");
+                Play(board, "c6", "b8");
+
+                Move? move = new MinimaxAI(1, seed).ChooseMove(board);
+
+                Assert.AreNotEqual(Sq("d2"), move.Value.To, $"seed {seed}");
+            }
+        }
+
     }
 }

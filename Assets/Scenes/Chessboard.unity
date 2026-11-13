@@ -176,8 +176,8 @@ Camera:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 1.4382023
-    height: 0.9375
+    width: 0.5638767
+    height: 0.9284333
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
@@ -733,13 +733,13 @@ MonoBehaviour:
   boardView: {fileID: 1985141052}
   mainCamera: {fileID: 0}
   statusView: {fileID: 1379336207}
-  playAgainstAI: 0
+  playAgainstAI: 1
   aiColor: 1
   aiDelay: 1
   aiLevel: 2
-  aiDepth: 2
-  aiMargin: 40
-  aiMistakeChance: 0.1
+  aiDepth: 3
+  aiMargin: 0
+  aiMistakeChance: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

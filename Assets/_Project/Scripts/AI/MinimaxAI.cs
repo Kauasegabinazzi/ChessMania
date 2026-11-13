@@ -13,6 +13,7 @@ namespace Game.AI
         public int NodesSearched { get; private set; }
         public int ScoreMargin { get; set; }
         public double MistakeChance { get; set; }
+        readonly List<ulong> path = new List<ulong>();
 
         public MinimaxAI(int depth, int? seed = null)
         {
@@ -61,6 +62,8 @@ namespace Game.AI
             if (MistakeChance > 0 && random.NextDouble() < MistakeChance)
                 return moves[random.Next(moves.Count)];
 
+            BuildPath(board);
+
             OrderMoves(moves);
 
             var scored = new List<(Move move, int score)>();
@@ -82,9 +85,29 @@ namespace Game.AI
             return candidates[random.Next(candidates.Count)].move;
         }
 
-        int Search(Board board, int depth, int ply, int alpha, int beta)
+        void BuildPath(Board board)
         {
-            NodesSearched++;
+            path.Clear();
+            var undone = new Stack<Move>();
+            int plies = board.HalfmoveClock;
+
+            for (int i = 0; i < plies; i++)
+            {
+                undone.Push(board.LastMove.Value);
+                board.UndoMove();
+            }
+
+            path.Add(Zobrist.Hash(board));
+
+            while (undone.Count > 0)
+            {
+                board.MakeMove(undone.Pop());
+                path.Add(Zobrist.Hash(board));
+            }
+        }
+
+        int SearchMoves(Board board, int depth, int ply, int alpha, int beta)
+        {
             PieceColor side = board.SideToMove;
             var moves = MoveGenerator.GetAllLegalMoves(board, side);
 
@@ -109,6 +132,35 @@ namespace Game.AI
             }
 
             return alpha;
+        }
+
+        int Search(Board board, int depth, int ply, int alpha, int beta)
+        {
+            NodesSearched++;
+
+            ulong hash = Zobrist.Hash(board);
+            if (IsDraw(board, hash)) return 0;
+
+            path.Add(hash);
+            int score = SearchMoves(board, depth, ply, alpha, beta);
+            path.RemoveAt(path.Count - 1);
+
+            return score;
+        }
+
+        bool IsDraw(Board board, ulong hash)
+        {
+            int clock = board.HalfmoveClock;
+            if (clock >= 100) return true;
+            if (DrawRules.IsInsufficientMaterial(board)) return true;
+
+            int oldest = Math.Max(0, path.Count - clock);
+            for (int i = path.Count - 2; i >= oldest; i -= 2)
+            {
+                if (path[i] == hash) return true;
+            }
+
+            return false;
         }
 
         static void OrderMoves(List<Move> moves)
